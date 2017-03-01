@@ -47,10 +47,16 @@ func (qm *Mailer) SendMail(mail Mailable) bool {
 		return false
 	}
 
-	config := &tls.Config{InsecureSkipVerify: qm.InsecureSkipVerify}
-	if err = connection.StartTLS(config); err != nil {
-		log.Println(err)
-		return false
+	supportsStartTLS, _ := connection.Extension("STARTTLS")
+
+	if supportsStartTLS {
+		config := &tls.Config{InsecureSkipVerify: qm.InsecureSkipVerify}
+		if err = connection.StartTLS(config); err != nil {
+			log.Println(err)
+			return false
+		}
+	} else {
+		log.Println("STARTTLS is not supported")
 	}
 
 	if !(qm.username == "" && qm.password == "") {
