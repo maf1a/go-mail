@@ -47,13 +47,13 @@ func (qm *Mailer) SendMail(mail Mailable) bool {
 		return false
 	}
 
-	if !(qm.host == "localhost" && qm.username == "" && qm.password == "") {
-		config := &tls.Config{InsecureSkipVerify: qm.InsecureSkipVerify}
-		if err = connection.StartTLS(config); err != nil {
-			log.Println(err)
-			return false
-		}
+	config := &tls.Config{InsecureSkipVerify: qm.InsecureSkipVerify}
+	if err = connection.StartTLS(config); err != nil {
+		log.Println(err)
+		return false
+	}
 
+	if !(qm.username == "" && qm.password == "") {
 		auth := smtp.PlainAuth("", qm.username, qm.password, qm.host)
 		if ok, _ := connection.Extension("AUTH"); ok {
 			if err = connection.Auth(auth); err != nil {
