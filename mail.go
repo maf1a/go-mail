@@ -4,8 +4,8 @@ package mail
 import (
 	"fmt"
 	"log"
+	"mime"
 	"net/mail"
-	"strings"
 )
 
 type Mail struct {
@@ -15,7 +15,7 @@ type Mail struct {
 	body    string
 }
 
-func NewMail(fromStr, toStr, subjectStr, body string) (*Mail, error) {
+func NewMail(fromStr, toStr, subject, body string) (*Mail, error) {
 	// parsing is necessary to handle special chars like ä, ö, ü; they could cause errors with some mail server
 
 	from, err := mail.ParseAddress(fromStr)
@@ -30,9 +30,9 @@ func NewMail(fromStr, toStr, subjectStr, body string) (*Mail, error) {
 		return nil, err
 	}
 
-	// hack to format subject with RFC 2047; necessary for special chars like ä, ö, ü
-	subjectTmp := &mail.Address{subjectStr, ""}
-	subject := strings.Trim(subjectTmp.String(), " <@>")
+	// encoding is necessary for special chars like ä, ö, ü
+	// if base64 is used for the message/body in the future, BEncoding could be used instead of QEncoding
+	subject = mime.QEncoding.Encode("UTF-8", subject)
 
 	return &Mail{
 		from:    from,
