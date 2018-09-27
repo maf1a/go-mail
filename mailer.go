@@ -17,6 +17,7 @@ type Mailer struct {
 	InsecureSkipVerify bool
 }
 
+// TODO make logger injectable and do not log by default, thus maybe use a dummy logger
 func NewMailer(host string, port int, username, password string) *Mailer {
 	return &Mailer{
 		host:               host,
