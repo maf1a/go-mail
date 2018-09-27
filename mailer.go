@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"log"
+	"net/mail"
 	"net/smtp"
 )
 
@@ -27,24 +28,24 @@ func NewMailer(host string, port int, username, password string) *Mailer {
 }
 
 type Mailable interface {
-	To() string
-	From() string
+	To() *mail.Address
+	From() *mail.Address
 	Message() string
 }
 
-func (qm *Mailer) SendMail(mail Mailable) bool {
+func (qm *Mailer) SendMail(mail Mailable) error {
 	address := fmt.Sprintf("%s:%d", qm.host, qm.port)
 
 	connection, err := smtp.Dial(address)
 	if err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 	defer connection.Close()
 
 	if err = connection.Hello(qm.host); err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 
 	supportsStartTLS, _ := connection.Extension("STARTTLS")
@@ -53,7 +54,7 @@ func (qm *Mailer) SendMail(mail Mailable) bool {
 		config := &tls.Config{InsecureSkipVerify: qm.InsecureSkipVerify}
 		if err = connection.StartTLS(config); err != nil {
 			log.Println(err)
-			return false
+			return err
 		}
 	} else {
 		log.Println("STARTTLS is not supported")
@@ -64,43 +65,43 @@ func (qm *Mailer) SendMail(mail Mailable) bool {
 		if ok, _ := connection.Extension("AUTH"); ok {
 			if err = connection.Auth(auth); err != nil {
 				log.Println(err)
-				return false
+				return err
 			}
 		}
 	}
 
-	if err := connection.Mail(mail.From()); err != nil {
+	if err := connection.Mail(mail.From().String()); err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 
-	if err := connection.Rcpt(mail.To()); err != nil {
+	if err := connection.Rcpt(mail.To().String()); err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 
 	data, err := connection.Data()
 	if err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 
 	_, err = fmt.Fprint(data, mail.Message())
 	if err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 
 	err = data.Close()
 	if err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 
 	if err := connection.Quit(); err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 
-	return true
+	return nil
 }
