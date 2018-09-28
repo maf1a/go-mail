@@ -70,12 +70,14 @@ func (qm *Mailer) SendMail(mail Mailable) error {
 		}
 	}
 
-	if err := connection.Mail(mail.From().String()); err != nil {
+	// the real from with name and address is set in mail.go:Message()
+	if err := connection.Mail(mail.From().Address); err != nil {
 		log.Println(err)
 		return err
 	}
 
-	if err := connection.Rcpt(mail.To().String()); err != nil {
+	// the real to with name and address is set in mail.go:Message()
+	if err := connection.Rcpt(mail.To().Address); err != nil {
 		log.Println(err)
 		return err
 	}
