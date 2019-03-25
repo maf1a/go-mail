@@ -30,6 +30,7 @@ func NewMailer(host string, port int, username, password string) *Mailer {
 type Mailable interface {
 	To() *mail.Address
 	From() *mail.Address
+	Bcc() (*mail.Address, bool)
 	Message() string
 }
 
@@ -70,16 +71,24 @@ func (qm *Mailer) SendMail(mail Mailable) error {
 		}
 	}
 
-	// the real from with name and address is set in mail.go:Message()
+	// the visible `from` with name and address is set in mail.go:Message()
 	if err := connection.Mail(mail.From().Address); err != nil {
 		log.Println(err)
 		return err
 	}
 
-	// the real to with name and address is set in mail.go:Message()
+	// the visible `to` with name and address is set in mail.go:Message()
 	if err := connection.Rcpt(mail.To().Address); err != nil {
 		log.Println(err)
 		return err
+	}
+
+	// bcc is handled as normal rcpt but not set in the message and thus invisible
+	if bcc, set := mail.Bcc(); set {
+		if err := connection.Rcpt(bcc.Address); err != nil {
+			log.Println(err)
+			return err
+		}
 	}
 
 	data, err := connection.Data()
