@@ -68,7 +68,7 @@ func (qm *Mail) From() *mail.Address {
 }
 
 func (qm *Mail) Bcc() (*mail.Address, bool) {
-	return qm.unsafeBcc, qm.unsafeBcc == nil
+	return qm.unsafeBcc, qm.unsafeBcc != nil
 }
 
 func (qm *Mail) Message() string {
