@@ -6,6 +6,7 @@ import (
 	"log"
 	"mime"
 	"net/mail"
+	"time"
 )
 
 type Mail struct {
@@ -72,5 +73,6 @@ func (qm *Mail) Bcc() (*mail.Address, bool) {
 }
 
 func (qm *Mail) Message() string {
-	return fmt.Sprintf("From: %s\nTo: %s\nSubject: %s\nContent-Type: text/plain; charset=\"UTF-8\"\n\n%s", qm.from, qm.to, qm.subject, qm.body)
+	// https://tools.ietf.org/html/rfc5322#section-3.3 defines own date format, but is identical to RFC1123Z
+	return fmt.Sprintf("Date: %s\nFrom: %s\nTo: %s\nSubject: %s\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\n\n%s", time.Now().Format(time.RFC1123Z), qm.from, qm.to, qm.subject, qm.body)
 }
