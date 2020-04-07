@@ -10,3 +10,6 @@
 - Impl support for multiple recipients.
 - // BCC support
 - make logger injectable and do not log by default, thus maybe use a dummy logger
+
+- implement TLS support without StartTLS
+- impl option to enforce use of STARTTLS?
