@@ -31,10 +31,10 @@ type Mailable interface {
 	To() *mail.Address
 	From() *mail.Address
 	Bcc() (*mail.Address, bool)
-	Message() string
+	Message(bool) string
 }
 
-func (qm *Mailer) SendMail(mail Mailable) error {
+func (qm *Mailer) SendMail(mail Mailable, isHtml bool) error {
 	address := fmt.Sprintf("%s:%d", qm.host, qm.port)
 
 	connection, err := smtp.Dial(address)
@@ -97,7 +97,7 @@ func (qm *Mailer) SendMail(mail Mailable) error {
 		return err
 	}
 
-	_, err = fmt.Fprint(data, mail.Message())
+	_, err = fmt.Fprint(data, mail.Message(isHtml))
 	if err != nil {
 		log.Println(err)
 		return err
