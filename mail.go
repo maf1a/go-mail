@@ -72,8 +72,13 @@ func (qm *Mail) Bcc() (*mail.Address, bool) {
 	return qm.unsafeBcc, qm.unsafeBcc != nil
 }
 
-func (qm *Mail) Message() string {
+func (qm *Mail) Message(isHtml bool) string {
+	contentType := "text/plain"
+	if isHtml {
+		contentType = "text/html"
+	}
+
 	// https://tools.ietf.org/html/rfc5322#section-3.3 defines own date format, but is identical to RFC1123Z
 	// CRLF (\r\n) according to https://tools.ietf.org/html/rfc5322#section-2.3
-	return fmt.Sprintf("Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n%s", time.Now().Format(time.RFC1123Z), qm.from, qm.to, qm.subject, qm.body)
+	return fmt.Sprintf("Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: %s; charset=UTF-8\r\n\r\n%s", time.Now().Format(time.RFC1123Z), qm.from, qm.to, qm.subject, contentType, qm.body)
 }
